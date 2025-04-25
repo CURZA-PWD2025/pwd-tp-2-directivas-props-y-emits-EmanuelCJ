@@ -279,6 +279,6 @@ const peliculas = [
     likes: 2200,
     portada:
       "https://i.pinimg.com/736x/7a/dc/4f/7adc4fb12c2b64ea4066d04e3d0769cc.jpg",
-  },
+  }
 ];
 export default peliculas;

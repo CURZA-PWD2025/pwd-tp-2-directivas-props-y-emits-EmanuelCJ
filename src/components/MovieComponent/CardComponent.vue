@@ -1,126 +1,136 @@
 <template>
-  <div class="container">
-    <div v-for="movie in cantidad" :key="movie.id" class="card image-container ">
-      <h2 class="card-title">{{ movie.titulo }}</h2>
-      <img :src="movie.portada" alt="Movie Poster" class="card-image" />
-      <div class="card-content">
-        <p class="card-description"><strong>Estreno:</strong> {{ movie.anio }}</p>
-        <p class="card-description"><strong>Género:</strong> {{ movie.generos }}</p>
-        <p class="card-description"><strong>Director: </strong>{{ movie.director }}</p>
-      </div>
-      <div class="card-likes">
-        <p><strong>LIKES:</strong> {{ movie.likes }}</p>
-        <button v-if="turno" @click="Like(movie.id)"><img src="../MovieComponent/img/like.png" alt=""></button>
-        <button v-else="turno" @click="desLike(movie.id)"><img src="../MovieComponent/img/deslike.png" alt=""></button>
-      </div>
+  <div>
+    <h2 class="card-title">{{ props.peliculas.titulo }}</h2>
+    <img :src="props.peliculas.portada" alt="Movie Poster" class="card-image" />
+    <div class="card-content">
+      <p class="card-description"><strong>Estreno:</strong> {{ props.peliculas.anio }}</p>
+      <p class="card-description"><strong>Género:</strong> {{ props.peliculas.generos }}</p>
+      <p class="card-description"><strong>Director: </strong>{{ props.peliculas.director }}</p>
+    </div>
+    <div class="card-likes">
+      <p><strong>LIKES:</strong> {{ likes }}</p>
+      <button v-if="isDisabled" @click="UpdateLike('like', props.peliculas.id)">
+        <img src="../MovieComponent/img/like.png" alt="like" class="img_btn" />
+      </button>
+      <button  v-else @click="UpdateLike('deslike', props.peliculas.id)">
+        <img src="../MovieComponent/img/deslike.png" alt="deslike" class="img_btn" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import movies from '../MovieComponent/movies.ts';
+import { defineProps, defineEmits,ref } from 'vue';
+import type { Pelicula } from '../../interfaces/Peliculas.ts';
 
-const cantidad = reactive(movies);
-const turno = ref(true); // Cambia a false para ocultar el botón de like
+const isDisabled = ref<boolean>(true);
 
-// Método para cambiar la imagen
-const Like = (id: number) => {
-  cantidad.forEach((movie) => {
-    if (movie.id == id) {
-      movie.likes++;
-      turno.value = false; // Cambia el estado del botón a "deslike"
-    }
-  });
-};
-const desLike = (id: number) => {
-  cantidad.forEach((movie) => {
-    if (movie.id == id) {
-      movie.likes--;
-      turno.value = true; 
-    }
-  });
+
+// Definimos las props
+const props = defineProps<{
+  peliculas: Pelicula;
+}>();
+
+const likes = ref(props.peliculas.likes);
+
+// Tipamos correctamente el emit con los argumentos que va a enviar
+const emit = defineEmits<{
+  (e: 'eleccion', tipo: string, id: number): void;
+}>();
+
+// Función que emite el evento
+const UpdateLike = (tipo: string, id: number) => {
+  emit('eleccion', tipo, id);
+  if (tipo === 'like') {
+    likes.value+=1;
+    isDisabled.value = false; // Deshabilitar el botón después de hacer clic
+  } else if (tipo === 'deslike') {
+    likes.value-=1;
+    isDisabled.value = true; 
+  } 
 };
 
 </script>
 
+
 <style scoped>
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.container {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-  gap: 20px 20px;
-}
-
 .card {
-  border: 1px solid #ccc;
-  background-color: navy;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  background-color: #1e2a38;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  padding: 20px;
   text-align: center;
-  object-fit: cover;
+  color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
 }
 
 .card-title {
-  font-size: 1.5em;
-  margin-bottom: 8px;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  margin-bottom: 12px;
+  color: #00bcd4;
 }
 
 .card-image {
   width: 100%;
-  height: auto;
-  border-radius: 8px;
-
-}
-
-.card-likes img {
-  width: 25px;
-  height: 25px;
-  margin: 0 5px;
-}
-
-.image-container img {
-  max-width: 300px;
+  height: 600px;
   object-fit: cover;
-  /* Ajusta el contenido sin distorsión */
-}
-@media (max-width: 1000px) {
-  .image-container img {
-    /* Cambia el tamaño máximo para pantallas pequeñas */
-    min-width: 200px;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px 10px;
-  }
-  
-}
-@media (max-width: 600px) {
-  .image-container img {
-    /* Cambia el tamaño máximo para pantallas pequeñas */
-    min-width: 200px;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    gap: 10px 10px;
-  }
+  border-radius: 10px;
+  margin-bottom: 12px;
 }
 
 .card-content {
   margin-top: 8px;
 }
+
+.card-description {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  margin: 6px 0;
+}
+
+.card-likes {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-likes p {
+  font-weight: bold;
+  margin-right: 10px;
+  color: #fdd835;
+}
+
+.card-likes img {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card-likes img:hover {
+  transform: scale(1.15);
+}
+
+/* Responsive extra pequeño */
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+
+  .card-image {
+    height: 220px;
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+  }
+}
+
+
 </style>
